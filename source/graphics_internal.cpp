@@ -18,12 +18,12 @@
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable: 4100 4189 4324)
-#endif // _MSC_VER
+#endif
 #define VMA_IMPLEMENTATION
 #include <vk_mem_alloc.h>
 #ifdef _MSC_VER
 #pragma warning(pop)
-#endif // _MSC_VER
+#endif
 
 #include <backends/imgui_impl_vulkan.h>
 
@@ -98,7 +98,6 @@ VkCommandPool vk_imgui_command_pool;
 VkCommandBuffer vk_imgui_command_buffer;
 
 VkFormat selectDepthFormat(VkPhysicalDevice physical_device) {
-	// Prefer the original format and preserve stencil support in the fallback.
 	const VkFormat candidates[] = {
 		VK_FORMAT_D24_UNORM_S8_UINT,
 		VK_FORMAT_D32_SFLOAT_S8_UINT,
@@ -478,7 +477,7 @@ bool initialize(GLFWwindow* const window) {
 
 	auto vkb_instance = ibr.value();
 	vk_instance = vkb_instance.instance;
-	vk_api_version = VK_API_VERSION_1_1; // The instance builder requires Vulkan 1.1 or newer.
+	vk_api_version = VK_API_VERSION_1_1;
 
 	if (glfwCreateWindowSurface(vk_instance, window, nullptr, &vk_surface) != VK_SUCCESS) {
 		const char *message = nullptr;
@@ -682,7 +681,6 @@ bool initialize(GLFWwindow* const window) {
 		float color[3];
 	};
 
-	// UV sphere: 12 sectors and 9 stacks produce 98 vertices (approximately 100).
 	constexpr int SPHERE_SECTORS = 12;
 	constexpr int SPHERE_STACKS = 9;
 	constexpr float PI_F = 3.14159265358979f;
@@ -692,7 +690,6 @@ bool initialize(GLFWwindow* const window) {
 	vertices.reserve(2 + (SPHERE_STACKS - 1) * SPHERE_SECTORS);
 	indices.reserve(SPHERE_SECTORS * 6 * (SPHERE_STACKS - 1));
 
-	// North pole. Vertex colors are generated from local-space coordinates.
 	vertices.push_back({ {0.0f, 1.0f, 0.0f}, {0.5f, 1.0f, 0.5f} });
 
 	for (int stack = 1; stack < SPHERE_STACKS; ++stack) {
@@ -713,7 +710,6 @@ bool initialize(GLFWwindow* const window) {
 	const uint32_t south_pole = static_cast<uint32_t>(vertices.size());
 	vertices.push_back({ {0.0f, -1.0f, 0.0f}, {0.5f, 0.0f, 0.5f} });
 
-	// Top cap.
 	for (int sector = 0; sector < SPHERE_SECTORS; ++sector) {
 		const uint32_t next = static_cast<uint32_t>((sector + 1) % SPHERE_SECTORS);
 		indices.push_back(0);
@@ -721,7 +717,6 @@ bool initialize(GLFWwindow* const window) {
 		indices.push_back(1 + static_cast<uint32_t>(sector));
 	}
 
-	// Quads between adjacent latitude rings, split into triangles.
 	for (int stack = 0; stack < SPHERE_STACKS - 2; ++stack) {
 		for (int sector = 0; sector < SPHERE_SECTORS; ++sector) {
 			const uint32_t next = static_cast<uint32_t>((sector + 1) % SPHERE_SECTORS);
@@ -733,7 +728,6 @@ bool initialize(GLFWwindow* const window) {
 		}
 	}
 
-	// Bottom cap.
 	const uint32_t last_ring = 1 + static_cast<uint32_t>((SPHERE_STACKS - 2) * SPHERE_SECTORS);
 	for (int sector = 0; sector < SPHERE_SECTORS; ++sector) {
 		const uint32_t next = static_cast<uint32_t>((sector + 1) % SPHERE_SECTORS);
@@ -755,6 +749,7 @@ bool initialize(GLFWwindow* const window) {
 		.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT | VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT,
 		.usage = VMA_MEMORY_USAGE_AUTO,
 	};
+	
 	void* mapped_data = nullptr;
 	vmaCreateBuffer(context.allocator, &buffer_info, &alloc_info, &context.vertex_buffer, &context.vertex_buffer_allocation, nullptr);
 	vmaMapMemory(context.allocator, context.vertex_buffer_allocation, &mapped_data);
